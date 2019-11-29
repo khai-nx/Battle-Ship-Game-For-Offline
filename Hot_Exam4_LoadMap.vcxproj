@@ -34,6 +34,7 @@
     <ProjectGuid>{AFD572A6-4053-44C8-A685-1648ABC745D0}</ProjectGuid>
     <RootNamespace>HotExam4LoadMap</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Full_Offline_Battleships</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

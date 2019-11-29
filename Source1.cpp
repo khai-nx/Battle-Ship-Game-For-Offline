@@ -4,7 +4,6 @@
 #include <string>
 #include <fstream>
 #include <windows.h>
-#include <mmsystem.h>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
 #include <vector>
@@ -16,9 +15,13 @@ using namespace std;
 
 const string mapPlayer1 = "mapPlayer1.txt";
 const string mapPlayer2 = "mapPlayer2.txt";
+
+//some symbols for the game
 const char isWATER = '0';
 const char isHIT = 'X';
 const char isMISS = 'M';
+
+//some colors for the game
 const char blue[] = "\x1B[34m";
 const char normal[] = "\x1B[0m";
 const char bblue[] = "\x1B[94m";
@@ -46,13 +49,13 @@ bool gameRunning = false;
 int boardSize = 0;
 
 int SelectMode() {
-	cout << "_________***BATTLESHIP***_________" << endl;
-
-	cout << "1. Human vs Human Match" << endl;
-	cout << "2. Human vs AI Match" << endl;
+	cout << endl << "_________" << bblue << "****" << red << " B A T T L E S H I P S " << bblue << "****" << normal <<"_________" << endl;
+	cout << endl << "\n\n	GAME MODE:" << endl;
+	cout << "\n1. HUMAN VS HUMAN MATCH" << endl;
+	cout << "2. HUMAN VS AI MATCH" << endl;
 	int ch = 0;
 	while (ch != 1 && ch != 2) {
-		cout << "Please select one game mode...	" << endl;
+		cout << endl << "To start, please select one game mode...	" << endl;
 		cin >> ch;
 	}
 	return ch;
@@ -85,10 +88,12 @@ bool IsNewShip(vector<char> shipName, char thisPos) {
 	return false;
 }
 
-void DrawBoard(int thisPlayer, PLAYER player, vector<char> shipName)
+void DrawBoard(int thisPlayer, int gameMode, PLAYER player, vector<char> shipName)
 {
 	//Draws the board for a player (thisPlayer)
-	cout << "PLAYER " << thisPlayer << "'s GAME BOARD\n";
+	if ((gameMode == 2 && thisPlayer == 1) || gameMode == 1) 
+		cout << "\nPLAYER " << thisPlayer << "'s GAME BOARD\n";
+	else cout <<"\nAI" << "'s GAME BOARD\n";
 	cout << "----------------------\n";
 
 	//Loop through top row (board_width) and number columns
@@ -121,12 +126,12 @@ void DrawBoard(int thisPlayer, PLAYER player, vector<char> shipName)
 			{
 				if (player.grid[h][w] == isHIT) cout << red << player.grid[h][w] << normal << "  ";
 				else if (player.grid[h][w] == isMISS) cout << yellow << player.grid[h][w] << normal << "  ";
-				else cout << blue << player.grid[h][w] << normal << "  ";
+				else cout << bblue << player.grid[h][w] << normal << "  ";
 			}
 			logic = !logic;
 			if (gameRunning == true && logic)
 			{
-				cout << blue << isWATER << normal << "  ";
+				cout << bblue << isWATER << normal << "  ";
 			}
 			//If we have reached the border.. line feed
 			if (w == boardSize - 1) cout << "\n";
@@ -168,7 +173,7 @@ bool UserInputAttack(int& x, int& y, int theplayer, int gameMode, PLAYER enemyPl
 		//x = 4; y = 0;
 		goodInput = true;
 	}
-	if ((gameMode == 2 && theplayer == 1) || gameMode == 1) {
+	else {
 		cout << "\nPLAYER " << theplayer << ", ENTER COORDINATES TO ATTACK: ";
 
 		cin >> x >> y; //the first one is horizontal
@@ -299,6 +304,33 @@ void CreatMapAI(PLAYER player1, PLAYER& player2, vector<char> shipName) {
 	}
 }
 
+void EndGame(int aWin, int gameMode) {
+	system("cls");
+	cout << yellow;
+	if (gameMode==1) {
+		if (3 == aWin) {
+			cout << "\n\n	WE HAVE A TIE GAME!!! \n\n\n\n";
+		}
+		else {
+			PlaySound(TEXT("win.wav"), NULL, SND_FILENAME | SND_ASYNC);
+			cout << "\n\n	CONGRATULATIONS!!!  PLAYER " << aWin << " HAS WON THE GAME!\n\n\n\n";
+		}
+	}
+
+	else {
+		if (3 == aWin) {
+			cout << "\n\n	WE HAVE A TIE GAME!!! \n\n\n\n";
+		}
+		else if (2 == aWin) {
+			cout << "\n\n	YOU HAVE LOST TO AI!!! \n\n\n\n";
+		}
+		else {
+			cout << "\n\n	CONGRATULATIONS!!! YOU HAVE WON AI!!! \n\n\n\n";
+		}
+	}
+	cout << normal;
+	cout << "\nHope you enjoy this game. Thanks for your time.\n\n";
+}
 
 int main()
 {
@@ -308,9 +340,10 @@ int main()
 	player[2].map = mapPlayer2;
 
 	if (!LoadMap(&player[1])) {
-		cout << "Failed to load player 1's map!" << endl;
+		cout << "\nFailed to load player 1's map!" << endl;
 		return -1;
 	}
+
 	vector<char> shipName; //vector saves types of ship
 	shipName.push_back('1');
 
@@ -324,11 +357,13 @@ int main()
 		for (int i = 0; i < boardSize; i++) {
 			(player[2].grid)[i] = new char[boardSize];
 		}
-		FOR_ALL_POINT_I_J player[2].grid[i][j] = isWATER;
+
+		FOR_ALL_POINT_I_J player[2].grid[i][j] = isWATER; //initiate map2 with all water
+		cout << "\nAI IS CREATING ITS FLEE ON THE MAP. PLEASE WAIT A MINUTE.\n";
 		CreatMapAI(player[1], player[2], shipName);
 	}
 	else if (!LoadMap(&player[2])) {
-		cout << "Failed to load player 2's map!" << endl;
+		cout << "\nFailed to load player 2's map!" << endl;
 		return -1;
 	}
 
@@ -341,7 +376,7 @@ int main()
 	FOR_ALL_POINT_I_J cout << player[1].grid[i][j] << ' ';
 	*/
 
-	cout << "PLAYERS' MAPS LOADED, READY TO FIGHT!!!" << endl;
+	cout << "\nPLAYERS' MAPS LOADED, READY TO FIGHT!!!" << endl;
 	system("pause");
 	//************************************
 	//Ready to play the game
@@ -355,10 +390,16 @@ int main()
 		if (thisPlayer == 1) enemyPlayer = 2;
 		if (thisPlayer == 2) enemyPlayer = 1;
 		system("cls");
-		DrawBoard(enemyPlayer, player[enemyPlayer], shipName);
-
-		cout << endl << "PLAYER " << thisPlayer << "'S SCORE: " << player[thisPlayer].score << endl;
-		cout << "PLAYER " << thisPlayer << "'S BOOMS LEFT: " << player[thisPlayer].boom << endl;
+		DrawBoard(enemyPlayer, gameMode, player[enemyPlayer], shipName);
+		if ((gameMode == 2 && thisPlayer == 1) || gameMode == 1) {
+			cout << endl << "PLAYER " << thisPlayer << "'S SCORE: " << player[thisPlayer].score << endl;
+			cout << "\nPLAYER " << thisPlayer << "'S BOOMS LEFT: " << player[thisPlayer].boom << endl;
+		}
+		else {
+			cout << endl << "AI'S SCORE: " << player[thisPlayer].score << endl;
+			cout << "\nAI'S BOOMS LEFT: " << player[thisPlayer].boom << endl;
+		}
+		
 		//Get attack coords from this player
 		bool goodInput = false;
 		int x = 0, y = 0;
@@ -380,7 +421,7 @@ int main()
 		if (player[enemyPlayer].grid[x][y] == isWATER) player[enemyPlayer].grid[x][y] = isMISS;
 
 		system("cls");
-		DrawBoard(enemyPlayer, player[enemyPlayer], shipName);
+		DrawBoard(enemyPlayer, gameMode, player[enemyPlayer], shipName);
 		cout << endl;
 		system("pause");
 
@@ -396,23 +437,7 @@ int main()
 		thisPlayer = (thisPlayer == 1) ? 2 : 1;
 	} while (gameRunning);
 
-	if (aWin == 3) {
-		system("cls");
-		cout << "	WE HAVE A TIE GAME!!! \n\n\n\n";
-		delete[](player[1].grid);
-		delete[](player[2].grid);
-		return 0;
-	}
-	if (aWin == 2&&gameMode==2) {
-		system("cls");
-		cout << "YOU HAVE LOST TO AI!!! \n\n\n\n";
-		delete[](player[1].grid);
-		delete[](player[2].grid);
-		return 0;
-	}
-	system("cls");
-	PlaySound(TEXT("win.wav"), NULL, SND_FILENAME | SND_ASYNC);
-	cout << "\n\nCONGRATULATIONS!!!  PLAYER " << aWin << " HAS WON THE GAME!\n\n\n\n";
+	EndGame(aWin, gameMode);
 
 	system("pause");
 	delete[](player[1].grid);
